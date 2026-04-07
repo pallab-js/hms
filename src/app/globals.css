@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /* Ollama-inspired grayscale palette */
+  --color-black: #000000;
+  --color-near-black: #262626;
+  --color-darkest: #090909;
+  --color-white: #ffffff;
+  --color-snow: #fafafa;
+  --color-light-gray: #e5e5e5;
+  --color-stone: #737373;
+  --color-mid-gray: #525252;
+  --color-silver: #a3a3a3;
+  --color-button-text-dark: #404040;
+  --color-border-light: #d4d4d4;
+  --color-ring-blue: #3b82f6;
+
+  /* Typography */
+  --font-display: "SF Pro Rounded", system-ui, -apple-system, sans-serif;
+  --font-body: ui-sans-serif, system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Base styles */
+html {
+  font-family: var(--font-body);
+  background: #ffffff;
+  color: #000000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark html {
+  background: #0a0a0a;
+  color: #ffffff;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.0;
+  letter-spacing: normal;
+}
+
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2.25rem;
+  line-height: 1.11;
+}
+
+h3 {
+  font-size: 1.88rem;
+  line-height: 1.2;
+}

@@ -1,0 +1,7 @@
+{
+  "identifier": "default-capability",
+  "permissions": [
+    "core:default",
+    "dialog:default"
+  ]
+}
