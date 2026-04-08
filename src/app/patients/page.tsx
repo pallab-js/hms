@@ -10,16 +10,17 @@ import {
   getPatients,
   upsertPatient,
   deletePatient,
+  type Patient,
   type CreatePatient,
 } from "@/lib/api";
 import { useState } from "react";
-import { Plus, Search, Trash2, X } from "lucide-react";
+import { Plus, Search, Trash2, X, Pencil } from "lucide-react";
 
 export default function PatientsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
 
   const { data: patients = [], isLoading } = useQuery({
     queryKey: ["patients"],
@@ -31,7 +32,7 @@ export default function PatientsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       setShowForm(false);
-      setEditing(false);
+      setEditingPatient(null);
     },
   });
 
@@ -58,7 +59,7 @@ export default function PatientsPage() {
             </p>
           </div>
           <button
-            onClick={() => { setShowForm(true); setEditing(false); }}
+            onClick={() => { setShowForm(true); setEditingPatient(null); }}
             className="flex items-center gap-2 rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
           >
             <Plus className="w-4 h-4" />
@@ -112,17 +113,29 @@ export default function PatientsPage() {
                     <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{p.phone}</td>
                     <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{p.email || "—"}</td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Delete patient "${p.name}"? This cannot be undone.`)) {
-                            deleteMutation.mutate(p.id);
-                          }
-                        }}
-                        className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Delete
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingPatient(p);
+                            setShowForm(true);
+                          }}
+                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Delete patient "${p.name}"? This cannot be undone.`)) {
+                              deleteMutation.mutate(p.id);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -134,7 +147,8 @@ export default function PatientsPage() {
         {/* Add/Edit Modal */}
         {showForm && (
           <PatientFormModal
-            onClose={() => { setShowForm(false); setEditing(false); }}
+            patient={editingPatient}
+            onClose={() => { setShowForm(false); setEditingPatient(null); }}
             onSubmit={(data) => createMutation.mutate(data)}
             isSubmitting={createMutation.isPending}
           />
@@ -145,26 +159,36 @@ export default function PatientsPage() {
 }
 
 function PatientFormModal({
+  patient,
   onClose,
   onSubmit,
   isSubmitting,
 }: {
+  patient: Patient | null;
   onClose: () => void;
   onSubmit: (data: CreatePatient) => void;
   isSubmitting: boolean;
 }) {
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("Male");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
+  const [name, setName] = useState(patient?.name || "");
+  const [age, setAge] = useState(patient?.age?.toString() || "");
+  const [gender, setGender] = useState(patient?.gender || "Male");
+  const [phone, setPhone] = useState(patient?.phone || "");
+  const [email, setEmail] = useState(patient?.email || "");
+  const [address, setAddress] = useState(patient?.address || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsedAge = parseInt(age);
+    if (isNaN(parsedAge) || parsedAge < 0 || parsedAge > 150) {
+      alert("Please enter a valid age between 0 and 150");
+      return;
+    }
+
     onSubmit({
+      id: patient?.id,
       name,
-      age: parseInt(age) || 0,
+      age: parsedAge,
       gender,
       phone,
       email: email || null,
@@ -176,7 +200,7 @@ function PatientFormModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
       <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">Add Patient</h2>
+          <h2 className="text-[1.5rem]">{patient ? "Edit Patient" : "Add Patient"}</h2>
           <button
             onClick={onClose}
             className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"

@@ -12,14 +12,16 @@ import {
   deleteAppointment,
   getPatients,
   getStaff,
+  type Appointment,
   type CreateAppointment,
 } from "@/lib/api";
 import { useState } from "react";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Plus, X, Trash2, Pencil } from "lucide-react";
 
 export default function AppointmentsPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
   const { data: appointments = [], isLoading: loadingAppts } = useQuery({
     queryKey: ["appointments"],
@@ -41,6 +43,7 @@ export default function AppointmentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       setShowForm(false);
+      setEditingAppointment(null);
     },
   });
 
@@ -152,11 +155,22 @@ export default function AppointmentsPage() {
                           </span>
                           <button
                             onClick={() => {
+                              setEditingAppointment(a);
+                              setShowForm(true);
+                            }}
+                            className="rounded-full p-2 hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil className="w-3.5 h-3.5 text-[#737373]" />
+                          </button>
+                          <button
+                            onClick={() => {
                               if (window.confirm(`Delete appointment "${a.title}"? This cannot be undone.`)) {
                                 deleteMutation.mutate(a.id);
                               }
                             }}
                             className="rounded-full p-2 hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                            title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-[#737373]" />
                           </button>
@@ -172,9 +186,10 @@ export default function AppointmentsPage() {
 
         {showForm && (
           <AppointmentFormModal
+            appointment={editingAppointment}
             patients={patients}
             staff={staffList}
-            onClose={() => setShowForm(false)}
+            onClose={() => { setShowForm(false); setEditingAppointment(null); }}
             onSubmit={(data) => createMutation.mutate(data)}
             isSubmitting={createMutation.isPending}
           />
@@ -185,34 +200,48 @@ export default function AppointmentsPage() {
 }
 
 function AppointmentFormModal({
+  appointment,
   patients,
   staff,
   onClose,
   onSubmit,
   isSubmitting,
 }: {
+  appointment: Appointment | null;
   patients: { id: string; name: string }[];
-  staff: { id: string; name: string }[];
+  staff: { id: string; name: string; role: string }[];
   onClose: () => void;
   onSubmit: (data: CreateAppointment) => void;
   isSubmitting: boolean;
 }) {
-  const [patientId, setPatientId] = useState("");
-  const [staffId, setStaffId] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [scheduledAt, setScheduledAt] = useState("");
-  const [duration, setDuration] = useState("30");
+  const [patientId, setPatientId] = useState(appointment?.patient_id || "");
+  const [staffId, setStaffId] = useState(appointment?.staff_id || "");
+  const [title, setTitle] = useState(appointment?.title || "");
+  const [description, setDescription] = useState(appointment?.description || "");
+  const [scheduledAt, setScheduledAt] = useState(
+    appointment?.scheduled_at
+      ? new Date(appointment.scheduled_at).toISOString().slice(0, 16)
+      : ""
+  );
+  const [duration, setDuration] = useState(appointment?.duration_minutes?.toString() || "30");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const parsedDuration = parseInt(duration);
+    if (isNaN(parsedDuration) || parsedDuration < 1 || parsedDuration > 480) {
+      alert("Please enter a valid duration between 1 and 480 minutes");
+      return;
+    }
+    
     onSubmit({
+      id: appointment?.id,
       patient_id: patientId,
       staff_id: staffId,
       title,
       description: description || null,
       scheduled_at: new Date(scheduledAt).toISOString(),
-      duration_minutes: parseInt(duration) || 30,
+      duration_minutes: parsedDuration,
     });
   };
 
@@ -220,7 +249,7 @@ function AppointmentFormModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
       <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">New Appointment</h2>
+          <h2 className="text-[1.5rem]">{appointment ? "Edit Appointment" : "New Appointment"}</h2>
           <button
             onClick={onClose}
             className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"

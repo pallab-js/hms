@@ -10,15 +10,17 @@ import {
   getStaff,
   upsertStaff,
   deleteStaff,
+  type Staff,
   type CreateStaff,
 } from "@/lib/api";
 import { useState } from "react";
-import { Plus, Search, Trash2, X } from "lucide-react";
+import { Plus, Search, Trash2, X, Pencil } from "lucide-react";
 
 export default function StaffPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ["staff"],
@@ -30,6 +32,7 @@ export default function StaffPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff"] });
       setShowForm(false);
+      setEditingStaff(null);
     },
   });
 
@@ -116,17 +119,29 @@ export default function StaffPage() {
                     <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{s.phone}</td>
                     <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{s.email || "—"}</td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Delete staff member "${s.name}"? This cannot be undone.`)) {
-                            deleteMutation.mutate(s.id);
-                          }
-                        }}
-                        className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Delete
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingStaff(s);
+                            setShowForm(true);
+                          }}
+                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Delete staff member "${s.name}"? This cannot be undone.`)) {
+                              deleteMutation.mutate(s.id);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -137,7 +152,8 @@ export default function StaffPage() {
 
         {showForm && (
           <StaffFormModal
-            onClose={() => setShowForm(false)}
+            staff={editingStaff}
+            onClose={() => { setShowForm(false); setEditingStaff(null); }}
             onSubmit={(data) => createMutation.mutate(data)}
             isSubmitting={createMutation.isPending}
           />
@@ -148,30 +164,32 @@ export default function StaffPage() {
 }
 
 function StaffFormModal({
+  staff,
   onClose,
   onSubmit,
   isSubmitting,
 }: {
+  staff: Staff | null;
   onClose: () => void;
   onSubmit: (data: CreateStaff) => void;
   isSubmitting: boolean;
 }) {
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("");
-  const [department, setDepartment] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(staff?.name || "");
+  const [role, setRole] = useState(staff?.role || "");
+  const [department, setDepartment] = useState(staff?.department || "");
+  const [phone, setPhone] = useState(staff?.phone || "");
+  const [email, setEmail] = useState(staff?.email || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, role, department, phone, email: email || null });
+    onSubmit({ id: staff?.id, name, role, department, phone, email: email || null });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
       <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">Add Staff</h2>
+          <h2 className="text-[1.5rem]">{staff ? "Edit Staff" : "Add Staff"}</h2>
           <button
             onClick={onClose}
             className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"

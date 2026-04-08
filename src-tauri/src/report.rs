@@ -120,6 +120,18 @@ macro_rules! text_out {
     };
 }
 
+/// Sanitize input for PDF content to prevent PDF structure corruption
+/// Removes control characters and escapes special PDF characters
+fn sanitize_for_pdf(input: &str) -> String {
+    input
+        .chars()
+        .filter(|c| !c.is_control() || *c == '\n' || *c == '\t')
+        .collect::<String>()
+        .replace('\\', "\\\\")
+        .replace('(', "\\(")
+        .replace(')', "\\)")
+}
+
 macro_rules! begin_text {
     ($ops:expr) => {
         op!($ops, "BT", []);
@@ -227,15 +239,15 @@ fn build_pdf_content(
         set_color!(ops, 0.45, 0.45, 0.45);
         set_font!(ops, "F2", 7.0);
         text_at!(ops, 30.0, y);
-        text_out!(ops, &p.name);
+        text_out!(ops, &sanitize_for_pdf(&p.name));
         text_at!(ops, 200.0, y);
         text_out!(ops, &p.age.to_string());
         text_at!(ops, 240.0, y);
-        text_out!(ops, &p.gender);
+        text_out!(ops, &sanitize_for_pdf(&p.gender));
         text_at!(ops, 300.0, y);
-        text_out!(ops, &p.phone);
+        text_out!(ops, &sanitize_for_pdf(&p.phone));
         text_at!(ops, 430.0, y);
-        text_out!(ops, email);
+        text_out!(ops, &sanitize_for_pdf(email));
         end_text!(ops);
         y -= 11.0;
         if y < 50.0 {
@@ -277,13 +289,13 @@ fn build_pdf_content(
             set_color!(ops, 0.45, 0.45, 0.45);
             set_font!(ops, "F2", 7.0);
             text_at!(ops, 30.0, y);
-            text_out!(ops, &s.name);
+            text_out!(ops, &sanitize_for_pdf(&s.name));
             text_at!(ops, 200.0, y);
-            text_out!(ops, &s.role);
+            text_out!(ops, &sanitize_for_pdf(&s.role));
             text_at!(ops, 340.0, y);
-            text_out!(ops, &s.department);
+            text_out!(ops, &sanitize_for_pdf(&s.department));
             text_at!(ops, 470.0, y);
-            text_out!(ops, &s.phone);
+            text_out!(ops, &sanitize_for_pdf(&s.phone));
             end_text!(ops);
             y -= 11.0;
             if y < 50.0 {
@@ -335,13 +347,13 @@ fn build_pdf_content(
             set_color!(ops, 0.45, 0.45, 0.45);
             set_font!(ops, "F2", 7.0);
             text_at!(ops, 30.0, y);
-            text_out!(ops, &item.name);
+            text_out!(ops, &sanitize_for_pdf(&item.name));
             text_at!(ops, 200.0, y);
-            text_out!(ops, &item.category);
+            text_out!(ops, &sanitize_for_pdf(&item.category));
             text_at!(ops, 340.0, y);
             text_out!(ops, &item.quantity.to_string());
             text_at!(ops, 390.0, y);
-            text_out!(ops, &item.unit);
+            text_out!(ops, &sanitize_for_pdf(&item.unit));
             text_at!(ops, 440.0, y);
             text_out!(ops, &item.min_quantity.to_string());
             text_at!(ops, 490.0, y);

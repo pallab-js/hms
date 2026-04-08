@@ -21,6 +21,9 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* Enable class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
 /* Base styles */
 html {
   font-family: var(--font-body);

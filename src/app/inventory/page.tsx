@@ -10,15 +10,17 @@ import {
   getInventoryItems,
   upsertInventoryItem,
   deleteInventoryItem,
+  type InventoryItem,
   type CreateInventoryItem,
 } from "@/lib/api";
 import { useState } from "react";
-import { Plus, Search, Trash2, X, AlertTriangle } from "lucide-react";
+import { Plus, Search, Trash2, X, AlertTriangle, Pencil } from "lucide-react";
 
 export default function InventoryPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["inventory"],
@@ -30,6 +32,7 @@ export default function InventoryPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
       setShowForm(false);
+      setEditingItem(null);
     },
   });
 
@@ -146,17 +149,29 @@ export default function InventoryPage() {
                       <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{item.unit}</td>
                       <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{item.min_quantity}</td>
                       <td className="p-4 text-right">
-                        <button
-                          onClick={() => {
-                            if (window.confirm(`Delete inventory item "${item.name}"? This cannot be undone.`)) {
-                              deleteMutation.mutate(item.id);
-                            }
-                          }}
-                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          Delete
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingItem(item);
+                              setShowForm(true);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Delete inventory item "${item.name}"? This cannot be undone.`)) {
+                                deleteMutation.mutate(item.id);
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -168,7 +183,8 @@ export default function InventoryPage() {
 
         {showForm && (
           <InventoryFormModal
-            onClose={() => setShowForm(false)}
+            item={editingItem}
+            onClose={() => { setShowForm(false); setEditingItem(null); }}
             onSubmit={(data) => createMutation.mutate(data)}
             isSubmitting={createMutation.isPending}
           />
@@ -179,28 +195,44 @@ export default function InventoryPage() {
 }
 
 function InventoryFormModal({
+  item,
   onClose,
   onSubmit,
   isSubmitting,
 }: {
+  item: InventoryItem | null;
   onClose: () => void;
   onSubmit: (data: CreateInventoryItem) => void;
   isSubmitting: boolean;
 }) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [quantity, setQuantity] = useState("0");
-  const [unit, setUnit] = useState("pcs");
-  const [minQuantity, setMinQuantity] = useState("5");
+  const [name, setName] = useState(item?.name || "");
+  const [category, setCategory] = useState(item?.category || "");
+  const [quantity, setQuantity] = useState(item?.quantity?.toString() ?? "0");
+  const [unit, setUnit] = useState(item?.unit || "pcs");
+  const [minQuantity, setMinQuantity] = useState(item?.min_quantity?.toString() ?? "5");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const parsedQuantity = parseInt(quantity);
+    if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+      alert("Please enter a valid non-negative quantity");
+      return;
+    }
+    
+    const parsedMinQuantity = parseInt(minQuantity);
+    if (isNaN(parsedMinQuantity) || parsedMinQuantity < 0) {
+      alert("Please enter a valid non-negative minimum quantity");
+      return;
+    }
+    
     onSubmit({
+      id: item?.id,
       name,
       category,
-      quantity: parseInt(quantity) || 0,
+      quantity: parsedQuantity,
       unit,
-      min_quantity: parseInt(minQuantity) || 0,
+      min_quantity: parsedMinQuantity,
     });
   };
 
@@ -208,7 +240,7 @@ function InventoryFormModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
       <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">Add Inventory Item</h2>
+          <h2 className="text-[1.5rem]">{item ? "Edit Inventory Item" : "Add Inventory Item"}</h2>
           <button
             onClick={onClose}
             className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"

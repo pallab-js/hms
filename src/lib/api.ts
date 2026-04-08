@@ -14,6 +14,7 @@ export interface Patient {
 }
 
 export interface CreatePatient {
+  id?: string;
   name: string;
   age: number;
   gender: string;
@@ -36,6 +37,7 @@ export interface Appointment {
 }
 
 export interface CreateAppointment {
+  id?: string;
   patient_id: string;
   staff_id: string;
   title: string;
@@ -56,6 +58,7 @@ export interface Staff {
 }
 
 export interface CreateStaff {
+  id?: string;
   name: string;
   role: string;
   department: string;
@@ -75,6 +78,7 @@ export interface InventoryItem {
 }
 
 export interface CreateInventoryItem {
+  id?: string;
   name: string;
   category: string;
   quantity: number;

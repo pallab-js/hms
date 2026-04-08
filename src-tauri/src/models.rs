@@ -19,6 +19,7 @@ pub struct Patient {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct CreatePatient {
+    pub id: Option<String>,
     pub name: String,
     pub age: i32,
     pub gender: String,
@@ -45,6 +46,7 @@ pub struct Appointment {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct CreateAppointment {
+    pub id: Option<String>,
     pub patient_id: String,
     pub staff_id: String,
     pub title: String,
@@ -69,6 +71,7 @@ pub struct Staff {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct CreateStaff {
+    pub id: Option<String>,
     pub name: String,
     pub role: String,
     pub department: String,
@@ -92,6 +95,7 @@ pub struct InventoryItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct CreateInventoryItem {
+    pub id: Option<String>,
     pub name: String,
     pub category: String,
     pub quantity: i32,

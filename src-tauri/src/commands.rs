@@ -3,6 +3,7 @@ use crate::error::AppError;
 use crate::models::*;
 use tauri::State;
 use uuid::Uuid;
+use email_address::EmailAddress;
 
 // ─── Input Validation Helpers ──────────────────────────────
 
@@ -40,21 +41,29 @@ fn validate_len(s: &str, max: usize, field: &str) -> Result<(), AppError> {
     }
 }
 
-fn validate_optional_len(s: &Option<String>, max: usize, field: &str) -> Result<(), AppError> {
-    if let Some(ref val) = s {
-        validate_len(val, max, field)
-    } else {
-        Ok(())
-    }
-}
-
 fn validate_email(email: &Option<String>) -> Result<(), AppError> {
     if let Some(ref e) = email {
-        if !e.is_empty() && (!e.contains('@') || !e.contains('.')) {
+        if !e.is_empty() && !EmailAddress::is_valid(e) {
             return Err(AppError::Validation("Invalid email format".into()));
         }
     }
     Ok(())
+}
+
+/// Sanitize input text by removing control characters and trimming whitespace
+fn sanitize_text_input(input: &str) -> Result<String, AppError> {
+    let sanitized: String = input
+        .chars()
+        .filter(|c| !c.is_control() || *c == '\n' || *c == '\t')
+        .collect();
+    
+    let trimmed = sanitized.trim();
+    
+    if trimmed.is_empty() && !input.trim().is_empty() {
+        return Err(AppError::Validation("Input contains only invalid characters".into()));
+    }
+    
+    Ok(trimmed.to_string())
 }
 
 fn now() -> String {
@@ -92,19 +101,30 @@ pub async fn upsert_patient_inner(
     state: &DbState,
     input: CreatePatient,
 ) -> Result<Patient, AppError> {
-    validate_not_empty(&input.name, "Patient name")?;
-    validate_len(&input.name, MAX_NAME_LEN, "Patient name")?;
-    validate_len(&input.gender, MAX_NAME_LEN, "Gender")?;
-    validate_len(&input.phone, MAX_PHONE_LEN, "Phone")?;
+    let sanitized_name = sanitize_text_input(&input.name)?;
+    let sanitized_gender = sanitize_text_input(&input.gender)?;
+    let sanitized_phone = sanitize_text_input(&input.phone)?;
+    let sanitized_address = if let Some(ref addr) = input.address {
+        Some(sanitize_text_input(addr)?)
+    } else {
+        None
+    };
+
+    validate_not_empty(&sanitized_name, "Patient name")?;
+    validate_len(&sanitized_name, MAX_NAME_LEN, "Patient name")?;
+    validate_len(&sanitized_gender, MAX_NAME_LEN, "Gender")?;
+    validate_len(&sanitized_phone, MAX_PHONE_LEN, "Phone")?;
     validate_email(&input.email)?;
-    validate_optional_len(&input.address, MAX_ADDRESS_LEN, "Address")?;
+    if let Some(ref addr) = sanitized_address {
+        validate_len(addr, MAX_ADDRESS_LEN, "Address")?;
+    }
 
     if input.age < 0 || input.age > 150 {
         return Err(AppError::Validation("Age must be between 0 and 150".into()));
     }
 
     let pool = state.get_pool().await;
-    let id = Uuid::new_v4().to_string();
+    let id = input.id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
     let ts = now();
 
     let patient = sqlx::query_as::<_, Patient>(
@@ -123,12 +143,12 @@ pub async fn upsert_patient_inner(
         "#,
     )
     .bind(&id)
-    .bind(&input.name)
+    .bind(&sanitized_name)
     .bind(input.age)
-    .bind(&input.gender)
-    .bind(&input.phone)
+    .bind(&sanitized_gender)
+    .bind(&sanitized_phone)
     .bind(&input.email)
-    .bind(&input.address)
+    .bind(&sanitized_address)
     .bind(&ts)
     .bind(&ts)
     .fetch_one(&pool)
@@ -187,9 +207,18 @@ pub async fn upsert_appointment_inner(
     state: &DbState,
     input: CreateAppointment,
 ) -> Result<Appointment, AppError> {
-    validate_not_empty(&input.title, "Appointment title")?;
-    validate_len(&input.title, MAX_TITLE_LEN, "Appointment title")?;
-    validate_optional_len(&input.description, MAX_DESC_LEN, "Description")?;
+    let sanitized_title = sanitize_text_input(&input.title)?;
+    let sanitized_description = if let Some(ref desc) = input.description {
+        Some(sanitize_text_input(desc)?)
+    } else {
+        None
+    };
+
+    validate_not_empty(&sanitized_title, "Appointment title")?;
+    validate_len(&sanitized_title, MAX_TITLE_LEN, "Appointment title")?;
+    if let Some(ref desc) = sanitized_description {
+        validate_len(desc, MAX_DESC_LEN, "Description")?;
+    }
 
     // Validate referenced records exist (FK check)
     let pool = state.get_pool().await;
@@ -216,7 +245,7 @@ pub async fn upsert_appointment_inner(
         return Err(AppError::Validation("Referenced staff member does not exist".into()));
     }
 
-    let id = Uuid::new_v4().to_string();
+    let id = input.id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
     let ts = now();
 
     let appointment = sqlx::query_as::<_, Appointment>(
@@ -237,8 +266,8 @@ pub async fn upsert_appointment_inner(
     .bind(&id)
     .bind(&input.patient_id)
     .bind(&input.staff_id)
-    .bind(&input.title)
-    .bind(&input.description)
+    .bind(&sanitized_title)
+    .bind(&sanitized_description)
     .bind(&input.scheduled_at)
     .bind(input.duration_minutes)
     .bind(&ts)
@@ -296,15 +325,20 @@ pub async fn upsert_staff(
 }
 
 pub async fn upsert_staff_inner(state: &DbState, input: CreateStaff) -> Result<Staff, AppError> {
-    validate_not_empty(&input.name, "Staff name")?;
-    validate_len(&input.name, MAX_NAME_LEN, "Staff name")?;
-    validate_len(&input.role, MAX_ROLE_LEN, "Role")?;
-    validate_len(&input.department, MAX_DEPT_LEN, "Department")?;
-    validate_len(&input.phone, MAX_PHONE_LEN, "Phone")?;
+    let sanitized_name = sanitize_text_input(&input.name)?;
+    let sanitized_role = sanitize_text_input(&input.role)?;
+    let sanitized_department = sanitize_text_input(&input.department)?;
+    let sanitized_phone = sanitize_text_input(&input.phone)?;
+
+    validate_not_empty(&sanitized_name, "Staff name")?;
+    validate_len(&sanitized_name, MAX_NAME_LEN, "Staff name")?;
+    validate_len(&sanitized_role, MAX_ROLE_LEN, "Role")?;
+    validate_len(&sanitized_department, MAX_DEPT_LEN, "Department")?;
+    validate_len(&sanitized_phone, MAX_PHONE_LEN, "Phone")?;
     validate_email(&input.email)?;
 
     let pool = state.get_pool().await;
-    let id = Uuid::new_v4().to_string();
+    let id = input.id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
     let ts = now();
 
     let staff = sqlx::query_as::<_, Staff>(
@@ -322,10 +356,10 @@ pub async fn upsert_staff_inner(state: &DbState, input: CreateStaff) -> Result<S
         "#,
     )
     .bind(&id)
-    .bind(&input.name)
-    .bind(&input.role)
-    .bind(&input.department)
-    .bind(&input.phone)
+    .bind(&sanitized_name)
+    .bind(&sanitized_role)
+    .bind(&sanitized_department)
+    .bind(&sanitized_phone)
     .bind(&input.email)
     .bind(&ts)
     .bind(&ts)
@@ -389,10 +423,14 @@ pub async fn upsert_inventory_item_inner(
     state: &DbState,
     input: CreateInventoryItem,
 ) -> Result<InventoryItem, AppError> {
-    validate_not_empty(&input.name, "Item name")?;
-    validate_len(&input.name, MAX_NAME_LEN, "Item name")?;
-    validate_len(&input.category, MAX_CATEGORY_LEN, "Category")?;
-    validate_len(&input.unit, MAX_UNIT_LEN, "Unit")?;
+    let sanitized_name = sanitize_text_input(&input.name)?;
+    let sanitized_category = sanitize_text_input(&input.category)?;
+    let sanitized_unit = sanitize_text_input(&input.unit)?;
+
+    validate_not_empty(&sanitized_name, "Item name")?;
+    validate_len(&sanitized_name, MAX_NAME_LEN, "Item name")?;
+    validate_len(&sanitized_category, MAX_CATEGORY_LEN, "Category")?;
+    validate_len(&sanitized_unit, MAX_UNIT_LEN, "Unit")?;
 
     if input.quantity < 0 {
         return Err(AppError::Validation("Quantity must be non-negative".into()));
@@ -402,7 +440,7 @@ pub async fn upsert_inventory_item_inner(
     }
 
     let pool = state.get_pool().await;
-    let id = Uuid::new_v4().to_string();
+    let id = input.id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
     let ts = now();
 
     let item = sqlx::query_as::<_, InventoryItem>(
@@ -420,10 +458,10 @@ pub async fn upsert_inventory_item_inner(
         "#,
     )
     .bind(&id)
-    .bind(&input.name)
-    .bind(&input.category)
+    .bind(&sanitized_name)
+    .bind(&sanitized_category)
     .bind(input.quantity)
-    .bind(&input.unit)
+    .bind(&sanitized_unit)
     .bind(input.min_quantity)
     .bind(&ts)
     .bind(&ts)
@@ -473,6 +511,7 @@ mod tests {
 
         // Name is required
         let input = CreatePatient {
+            id: None,
             name: "".into(),
             age: 30,
             gender: "Male".into(),
@@ -485,6 +524,7 @@ mod tests {
 
         // Age must be between 0 and 150
         let input = CreatePatient {
+            id: None,
             name: "John".into(),
             age: 200,
             gender: "Male".into(),
@@ -502,6 +542,7 @@ mod tests {
 
         // 1. Create
         let input = CreatePatient {
+            id: None,
             name: "Alice Smith".into(),
             age: 28,
             gender: "Female".into(),
@@ -533,6 +574,7 @@ mod tests {
 
         // 1. Create
         let input = CreateStaff {
+            id: None,
             name: "Dr. Gregory House".into(),
             role: "Diagnostic Medicine".into(),
             department: "Diagnostics".into(),
@@ -558,6 +600,7 @@ mod tests {
 
         // 1. Create
         let input = CreateInventoryItem {
+            id: None,
             name: "Aspirin".into(),
             category: "Medicine".into(),
             quantity: 100,
@@ -582,6 +625,7 @@ mod tests {
         let state = setup_test_db().await;
 
         let input = CreateAppointment {
+            id: None,
             patient_id: Uuid::new_v4().to_string(),
             staff_id: Uuid::new_v4().to_string(),
             title: "Checkup".into(),

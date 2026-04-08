@@ -1,7 +1,15 @@
 {
   "identifier": "default-capability",
+  "description": "Default permissions for the main webview",
+  "windows": ["*"],
+  "webviews": ["*"],
+  "remote": {
+    "urls": ["http://localhost:*", "https://localhost:*"]
+  },
   "permissions": [
     "core:default",
-    "dialog:default"
+    "dialog:default",
+    "dialog:allow-open",
+    "dialog:allow-save"
   ]
 }
