@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, createContext, useContext, useEffect, type ReactNode } from "react";
+import { useState, createContext, useContext, type ReactNode } from "react";
 
-type Theme = "light" | "dark";
+type Theme = "dark";
 
 interface ThemeContextType {
   theme: Theme;
-  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
-  toggleTheme: () => {},
+  theme: "dark",
 });
 
 export function useTheme() {
@@ -19,25 +17,12 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("hms-theme") as Theme | null;
-    if (saved) setTheme(saved);
-  }, []);
-
-  const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    localStorage.setItem("hms-theme", next);
-  };
+  const [theme] = useState<Theme>("dark");
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div className={theme === "dark" ? "dark" : ""}>
-        <div className="min-h-screen bg-[#ffffff] dark:bg-[#0a0a0a] text-[#000000] dark:text-[#ffffff] transition-colors duration-200">
-          {children}
-        </div>
+    <ThemeContext.Provider value={{ theme }}>
+      <div className="min-h-screen" style={{ background: 'var(--color-bg-primary)' }}>
+        {children}
       </div>
     </ThemeContext.Provider>
   );

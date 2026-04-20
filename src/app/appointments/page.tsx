@@ -57,7 +57,6 @@ export default function AppointmentsPage() {
   const patientMap = new Map(patients.map((p) => [p.id, p.name]));
   const staffMap = new Map(staffList.map((s) => [s.id, s.name]));
 
-  // Group by date
   const byDate = new Map<string, typeof appointments>();
   for (const a of appointments) {
     const date = a.scheduled_at.split("T")[0];
@@ -67,19 +66,52 @@ export default function AppointmentsPage() {
 
   const sortedDates = [...byDate.keys()].sort();
 
+  const cardStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    border: '1px solid var(--color-border-default)',
+    borderRadius: '8px',
+    background: 'var(--color-bg-surface)',
+    padding: '16px',
+  };
+
+  const labelStyle = {
+    fontSize: '0.75rem',
+    color: 'var(--color-text-muted)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+  };
+
+  const valueStyle = {
+    fontSize: '0.875rem',
+    color: 'var(--color-text-primary)',
+  };
+
   return (
     <AppShell>
-      <div>
+      <div id="main-content">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="mb-1">Appointments</h1>
-            <p className="text-[#737373] dark:text-[#a3a3a3] text-base">
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.5 }}>
               Schedule and manage appointments
             </p>
           </div>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              background: 'var(--color-bg-button)',
+              color: 'var(--color-text-primary)',
+              padding: '8px 24px',
+              borderRadius: '9999px',
+              border: '1px solid var(--color-text-primary)',
+              fontSize: '0.875rem',
+              cursor: 'pointer'
+            }}
           >
             <Plus className="w-4 h-4" />
             New Appointment
@@ -87,9 +119,9 @@ export default function AppointmentsPage() {
         </div>
 
         {loadingAppts ? (
-          <div className="p-12 text-center text-[#737373]">Loading...</div>
+          <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>Loading...</div>
         ) : sortedDates.length === 0 ? (
-          <div className="p-12 text-center text-[#737373]">
+          <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>
             No appointments scheduled
           </div>
         ) : (
@@ -98,7 +130,7 @@ export default function AppointmentsPage() {
               const dayAppts = byDate.get(date)!;
               return (
                 <div key={date}>
-                  <h3 className="text-[1.25rem] mb-3">
+                  <h3 className="mb-3" style={{ fontSize: '1.125rem', color: 'var(--color-text-primary)' }}>
                     {new Date(date).toLocaleDateString("en-US", {
                       weekday: "long",
                       year: "numeric",
@@ -108,60 +140,46 @@ export default function AppointmentsPage() {
                   </h3>
                   <div className="space-y-2">
                     {dayAppts.map((a) => (
-                      <div
-                        key={a.id}
-                        className="flex items-center justify-between rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#fafafa] dark:bg-[#141414] p-4"
-                      >
-                        <div className="flex-1 grid grid-cols-4 gap-4">
+                      <div key={a.id} style={cardStyle}>
+                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
                           <div>
-                            <p className="text-xs text-[#737373] dark:text-[#a3a3a3]">
-                              Time
-                            </p>
-                            <p className="text-sm font-medium text-[#262626] dark:text-[#d4d4d4]">
-                              {new Date(a.scheduled_at).toLocaleTimeString(
-                                "en-US",
-                                { hour: "2-digit", minute: "2-digit" }
-                              )}
+                            <p style={labelStyle}>Time</p>
+                            <p style={valueStyle}>
+                              {new Date(a.scheduled_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-[#737373] dark:text-[#a3a3a3]">
-                              Patient
-                            </p>
-                            <p className="text-sm font-medium text-[#262626] dark:text-[#d4d4d4]">
-                              {patientMap.get(a.patient_id) || "Unknown"}
-                            </p>
+                            <p style={labelStyle}>Patient</p>
+                            <p style={valueStyle}>{patientMap.get(a.patient_id) || "Unknown"}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-[#737373] dark:text-[#a3a3a3]">
-                              Staff
-                            </p>
-                            <p className="text-sm font-medium text-[#262626] dark:text-[#d4d4d4]">
-                              {staffMap.get(a.staff_id) || "Unknown"}
-                            </p>
+                            <p style={labelStyle}>Staff</p>
+                            <p style={valueStyle}>{staffMap.get(a.staff_id) || "Unknown"}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-[#737373] dark:text-[#a3a3a3]">
-                              Duration
-                            </p>
-                            <p className="text-sm font-medium text-[#262626] dark:text-[#d4d4d4]">
-                              {a.duration_minutes} min
-                            </p>
+                            <p style={labelStyle}>Duration</p>
+                            <p style={valueStyle}>{a.duration_minutes} min</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <span className="rounded-full bg-[#e5e5e5] dark:bg-[#262626] px-3 py-1 text-xs font-medium text-[#525252] dark:text-[#a3a3a3]">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
+                          <span 
+                            style={{ 
+                              borderRadius: '9999px', 
+                              padding: '4px 12px', 
+                              fontSize: '0.75rem',
+                              background: 'var(--color-bg-button)',
+                              color: 'var(--color-text-muted)',
+                              border: '1px solid var(--color-border-default)'
+                            }}
+                          >
                             {a.status}
                           </span>
                           <button
-                            onClick={() => {
-                              setEditingAppointment(a);
-                              setShowForm(true);
-                            }}
-                            className="rounded-full p-2 hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                            onClick={() => { setEditingAppointment(a); setShowForm(true); }}
+                            style={{ borderRadius: '9999px', padding: '8px', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent' }}
                             title="Edit"
                           >
-                            <Pencil className="w-3.5 h-3.5 text-[#737373]" />
+                            <Pencil className="w-3.5 h-3.5" style={{ color: 'var(--color-text-muted)' }} />
                           </button>
                           <button
                             onClick={() => {
@@ -169,10 +187,10 @@ export default function AppointmentsPage() {
                                 deleteMutation.mutate(a.id);
                               }
                             }}
-                            className="rounded-full p-2 hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                            style={{ borderRadius: '9999px', padding: '8px', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent' }}
                             title="Delete"
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-[#737373]" />
+                            <Trash2 className="w-3.5 h-3.5" style={{ color: 'var(--color-text-muted)' }} />
                           </button>
                         </div>
                       </div>
@@ -219,21 +237,17 @@ function AppointmentFormModal({
   const [title, setTitle] = useState(appointment?.title || "");
   const [description, setDescription] = useState(appointment?.description || "");
   const [scheduledAt, setScheduledAt] = useState(
-    appointment?.scheduled_at
-      ? new Date(appointment.scheduled_at).toISOString().slice(0, 16)
-      : ""
+    appointment?.scheduled_at ? new Date(appointment.scheduled_at).toISOString().slice(0, 16) : ""
   );
   const [duration, setDuration] = useState(appointment?.duration_minutes?.toString() || "30");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const parsedDuration = parseInt(duration);
     if (isNaN(parsedDuration) || parsedDuration < 1 || parsedDuration > 480) {
       alert("Please enter a valid duration between 1 and 480 minutes");
       return;
     }
-    
     onSubmit({
       id: appointment?.id,
       patient_id: patientId,
@@ -245,121 +259,61 @@ function AppointmentFormModal({
     });
   };
 
+  const inputStyle = {
+    width: '100%',
+    border: '1px solid var(--color-border-default)',
+    background: 'var(--color-bg-button)',
+    color: 'var(--color-text-primary)',
+    padding: '10px 16px',
+    borderRadius: '9999px',
+    fontSize: '0.875rem',
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-      <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
+      <div className="w-full max-w-lg rounded-lg" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', padding: '24px' }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">{appointment ? "Edit Appointment" : "New Appointment"}</h2>
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
-          >
-            <X className="w-4 h-4 text-[#737373]" />
+          <h3>{appointment ? "Edit Appointment" : "New Appointment"}</h3>
+          <button onClick={onClose} style={{ borderRadius: '9999px', padding: '8px', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent' }}>
+            <X className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Title *
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              maxLength={255}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Title *</label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={255} style={inputStyle} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Patient *
-            </label>
-            <select
-              value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
-              required
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            >
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Patient *</label>
+            <select value={patientId} onChange={(e) => setPatientId(e.target.value)} required style={inputStyle}>
               <option value="">Select patient</option>
-              {patients.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
+              {patients.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Staff *
-            </label>
-            <select
-              value={staffId}
-              onChange={(e) => setStaffId(e.target.value)}
-              required
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            >
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Staff *</label>
+            <select value={staffId} onChange={(e) => setStaffId(e.target.value)} required style={inputStyle}>
               <option value="">Select staff</option>
-              {staff.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} — {s.role}
-                </option>
-              ))}
+              {staff.map((s) => <option key={s.id} value={s.id}>{s.name} — {s.role}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Date & Time *
-            </label>
-            <input
-              type="datetime-local"
-              value={scheduledAt}
-              onChange={(e) => setScheduledAt(e.target.value)}
-              required
-              className="w-full rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Date & Time *</label>
+            <input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} required style={inputStyle} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-                Duration (min) *
-              </label>
-              <input
-                type="number"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                required
-                min="5"
-                step="5"
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Duration (min) *</label>
+              <input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} required min="5" step="5" style={inputStyle} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-                Description
-              </label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                maxLength={2000}
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Description</label>
+              <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} style={inputStyle} />
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] text-[#404040] dark:text-[#d4d4d4] px-6 py-2.5 text-sm font-medium hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
+            <button type="button" onClick={onClose} style={{ borderRadius: '9999px', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface)', color: 'var(--color-text-primary)', padding: '10px 24px', fontSize: '0.875rem', cursor: 'pointer' }}>Cancel</button>
+            <button type="submit" disabled={isSubmitting} style={{ borderRadius: '9999px', background: 'var(--color-bg-button)', color: 'var(--color-text-primary)', padding: '10px 24px', fontSize: '0.875rem', border: '1px solid var(--color-text-primary)', opacity: isSubmitting ? 0.5 : 1, cursor: 'pointer' }}>
               {isSubmitting ? "Saving..." : "Schedule"}
             </button>
           </div>

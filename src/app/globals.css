@@ -1,48 +1,57 @@
 @import "tailwindcss";
 
 @theme {
-  /* Ollama-inspired grayscale palette */
-  --color-black: #000000;
-  --color-near-black: #262626;
-  --color-darkest: #090909;
-  --color-white: #ffffff;
-  --color-snow: #fafafa;
-  --color-light-gray: #e5e5e5;
-  --color-stone: #737373;
-  --color-mid-gray: #525252;
-  --color-silver: #a3a3a3;
-  --color-button-text-dark: #404040;
-  --color-border-light: #d4d4d4;
-  --color-ring-blue: #3b82f6;
+  /* Supabase-inspired dark palette */
+  --color-bg-primary: #171717;
+  --color-bg-button: #0f0f0f;
+  --color-bg-surface: #141414;
+  --color-bg-elevated: #1a1a1a;
+  
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #b4b4b4;
+  --color-text-muted: #898989;
+  
+  --color-brand: #3ecf8e;
+  --color-brand-link: #00c573;
+  --color-brand-border: rgba(62, 207, 142, 0.3);
+  
+  --color-border-subtle: #242424;
+  --color-border-default: #2e2e2e;
+  --color-border-prominent: #363636;
+  --color-border-light: #393939;
+  
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
 
   /* Typography */
-  --font-display: "SF Pro Rounded", system-ui, -apple-system, sans-serif;
-  --font-body: ui-sans-serif, system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-display: "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "Source Code Pro", "Office Code Pro", Menlo, monospace;
 }
 
-/* Enable class-based dark mode */
+/* Enable class-based dark mode (always on for this app) */
 @variant dark (&:where(.dark, .dark *));
 
-/* Base styles */
+/* Base styles - always dark mode */
 html {
   font-family: var(--font-body);
-  background: #ffffff;
-  color: #000000;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.dark html {
-  background: #0a0a0a;
-  color: #ffffff;
+body {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.0;
   letter-spacing: normal;
+  color: var(--color-text-primary);
 }
 
 h1 {
@@ -55,6 +64,58 @@ h2 {
 }
 
 h3 {
-  font-size: 1.88rem;
-  line-height: 1.2;
+  font-size: 1.5rem;
+  line-height: 1.33;
+  letter-spacing: -0.16px;
+}
+
+/* Custom focus styles per design guide */
+*:focus-visible {
+  outline: none;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+
+/* Button base */
+button {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.14;
+  cursor: pointer;
+}
+
+/* Input base */
+input, select, textarea {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+}
+
+/* Code labels per design guide */
+.code-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.33;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-prominent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
 }

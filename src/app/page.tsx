@@ -3,18 +3,13 @@
 import { AppShell } from "@/components/AppShell";
 import {
   useQuery,
-  useMutation,
-  useQueryClient,
 } from "@tanstack/react-query";
 import {
   getPatients,
   getAppointments,
   getStaff,
   getInventoryItems,
-  deletePatient,
 } from "@/lib/api";
-import { useState } from "react";
-import { Plus, Search, Trash2, X } from "lucide-react";
 
 export default function DashboardPage() {
   const { data: patients = [] } = useQuery({
@@ -39,9 +34,9 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div>
+      <div id="main-content">
         <h1 className="mb-2">Dashboard</h1>
-        <p className="text-[#737373] dark:text-[#a3a3a3] text-base">
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.5 }}>
           Welcome to HMS — your local-first hospital management system.
         </p>
 
@@ -54,12 +49,23 @@ export default function DashboardPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#fafafa] dark:bg-[#141414] p-6"
+              className="rounded-lg"
+              style={{ 
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border-default)',
+                padding: '24px'
+              }}
             >
-              <p className="text-sm text-[#737373] dark:text-[#a3a3a3]">
+              <p className="code-label" style={{ fontSize: '0.75rem' }}>
                 {stat.label}
               </p>
-              <p className="mt-2 text-3xl font-display font-medium text-[#000000] dark:text-[#ffffff]">
+              <p 
+                className="mt-2 text-3xl font-display" 
+                style={{ 
+                  color: 'var(--color-text-primary)',
+                  lineHeight: 1.0
+                }}
+              >
                 {stat.count}
               </p>
             </div>
@@ -69,18 +75,30 @@ export default function DashboardPage() {
         {/* Recent Patients */}
         {patients.length > 0 && (
           <div className="mt-12">
-            <h3 className="mb-4 text-[1.25rem]">Recent Patients</h3>
-            <div className="rounded-xl border border-[#e5e5e5] dark:border-[#262626] overflow-hidden">
+            <h3 className="mb-4" style={{ fontSize: '1.25rem' }}>Recent Patients</h3>
+            <div 
+              className="rounded-lg overflow-hidden"
+              style={{ border: '1px solid var(--color-border-default)' }}
+            >
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#e5e5e5] dark:border-[#262626]">
-                    <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">
+                  <tr style={{ borderBottom: '1px solid var(--color-border-default)' }}>
+                    <th 
+                      className="text-left p-4 font-medium" 
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
                       Name
                     </th>
-                    <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">
+                    <th 
+                      className="text-left p-4 font-medium" 
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
                       Age
                     </th>
-                    <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">
+                    <th 
+                      className="text-left p-4 font-medium" 
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
                       Phone
                     </th>
                   </tr>
@@ -89,15 +107,17 @@ export default function DashboardPage() {
                   {patients.slice(0, 5).map((p) => (
                     <tr
                       key={p.id}
-                      className="border-b border-[#e5e5e5] dark:border-[#262626] last:border-0"
+                      style={{ 
+                        borderBottom: '1px solid var(--color-border-subtle)',
+                      }}
                     >
-                      <td className="p-4 text-[#262626] dark:text-[#d4d4d4]">
+                      <td className="p-4" style={{ color: 'var(--color-text-primary)' }}>
                         {p.name}
                       </td>
-                      <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">
+                      <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>
                         {p.age}
                       </td>
-                      <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">
+                      <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>
                         {p.phone}
                       </td>
                     </tr>

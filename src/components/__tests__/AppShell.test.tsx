@@ -2,13 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { AppShell } from '../AppShell';
 import { describe, it, expect, vi } from 'vitest';
 
-// Mock Next.js navigation and theme hook
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
-}));
-
-vi.mock('@/components/ThemeProvider', () => ({
-  useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() }),
 }));
 
 describe('AppShell', () => {

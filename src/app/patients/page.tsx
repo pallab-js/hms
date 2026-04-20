@@ -50,17 +50,23 @@ export default function PatientsPage() {
 
   return (
     <AppShell>
-      <div>
+      <div id="main-content">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="mb-1">Patients</h1>
-            <p className="text-[#737373] dark:text-[#a3a3a3] text-base">
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.5 }}>
               Manage patient records
             </p>
           </div>
           <button
             onClick={() => { setShowForm(true); setEditingPatient(null); }}
-            className="flex items-center gap-2 rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 rounded-full"
+            style={{ 
+              background: 'var(--color-bg-button)',
+              color: 'var(--color-text-primary)',
+              padding: '8px 32px',
+              border: '1px solid var(--color-text-primary)'
+            }}
           >
             <Plus className="w-4 h-4" />
             Add Patient
@@ -70,48 +76,55 @@ export default function PatientsPage() {
         {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a3a3a3]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
             <input
               type="text"
               placeholder="Search patients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] pl-10 pr-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+              className="w-full rounded-full"
+              style={{ 
+                border: '1px solid var(--color-border-default)',
+                background: 'var(--color-bg-surface)',
+                color: 'var(--color-text-primary)',
+                padding: '10px 16px 10px 40px',
+                fontSize: '0.875rem'
+              }}
             />
           </div>
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-[#e5e5e5] dark:border-[#262626] overflow-hidden">
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--color-border-default)' }}>
           {isLoading ? (
-            <div className="p-12 text-center text-[#737373]">Loading...</div>
+            <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>Loading...</div>
           ) : filtered.length === 0 ? (
-            <div className="p-12 text-center text-[#737373]">
+            <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>
               {search ? "No patients match your search" : "No patients yet"}
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e5e5e5] dark:border-[#262626] bg-[#fafafa] dark:bg-[#141414]">
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Name</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Age</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Gender</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Phone</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Email</th>
-                  <th className="text-right p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Actions</th>
+                <tr style={{ borderBottom: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface)' }}>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Name</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Age</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Gender</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Phone</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Email</th>
+                  <th className="text-right p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((p) => (
                   <tr
                     key={p.id}
-                    className="border-b border-[#e5e5e5] dark:border-[#262626] last:border-0 hover:bg-[#fafafa] dark:hover:bg-[#141414]"
+                    style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
                   >
-                    <td className="p-4 font-medium text-[#262626] dark:text-[#d4d4d4]">{p.name}</td>
-                    <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{p.age}</td>
-                    <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{p.gender}</td>
-                    <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{p.phone}</td>
-                    <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{p.email || "—"}</td>
+                    <td className="p-4 font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.name}</td>
+                    <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{p.age}</td>
+                    <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{p.gender}</td>
+                    <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{p.phone}</td>
+                    <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{p.email || "—"}</td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -119,7 +132,11 @@ export default function PatientsPage() {
                             setEditingPatient(p);
                             setShowForm(true);
                           }}
-                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium"
+                          style={{ 
+                            color: 'var(--color-text-muted)',
+                            border: '1px solid var(--color-border-default)'
+                          }}
                         >
                           <Pencil className="w-3 h-3" />
                           Edit
@@ -130,7 +147,11 @@ export default function PatientsPage() {
                               deleteMutation.mutate(p.id);
                             }
                           }}
-                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium"
+                          style={{ 
+                            color: 'var(--color-text-muted)',
+                            border: '1px solid var(--color-border-default)'
+                          }}
                         >
                           <Trash2 className="w-3 h-3" />
                           Delete
@@ -196,21 +217,39 @@ function PatientFormModal({
     });
   };
 
+  const inputStyle = {
+    border: '1px solid var(--color-border-default)',
+    background: 'var(--color-bg-button)',
+    color: 'var(--color-text-primary)',
+    padding: '10px 16px',
+    borderRadius: '9999px',
+    fontSize: '0.875rem',
+    width: '100%' as const,
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-      <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
+      <div 
+        className="w-full max-w-lg rounded-lg" 
+        style={{ 
+          background: 'var(--color-bg-surface)', 
+          border: '1px solid var(--color-border-default)',
+          padding: '24px'
+        }}
+      >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">{patient ? "Edit Patient" : "Add Patient"}</h2>
+          <h3>{patient ? "Edit Patient" : "Add Patient"}</h3>
           <button
             onClick={onClose}
-            className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
+            className="rounded-full p-2"
+            style={{ border: '1px solid var(--color-border-default)' }}
           >
-            <X className="w-4 h-4 text-[#737373]" />
+            <X className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
               Name *
             </label>
             <input
@@ -219,12 +258,12 @@ function PatientFormModal({
               onChange={(e) => setName(e.target.value)}
               required
               maxLength={255}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+              style={inputStyle}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                 Age *
               </label>
               <input
@@ -234,17 +273,17 @@ function PatientFormModal({
                 required
                 min="0"
                 max="150"
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+                style={inputStyle}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                 Gender *
               </label>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+                style={inputStyle}
               >
                 <option>Male</option>
                 <option>Female</option>
@@ -253,7 +292,7 @@ function PatientFormModal({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
               Phone *
             </label>
             <input
@@ -262,22 +301,22 @@ function PatientFormModal({
               onChange={(e) => setPhone(e.target.value)}
               required
               maxLength={50}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+              style={inputStyle}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+              style={inputStyle}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
               Address
             </label>
             <input
@@ -285,21 +324,36 @@ function PatientFormModal({
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               maxLength={500}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+              style={inputStyle}
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] text-[#404040] dark:text-[#d4d4d4] px-6 py-2.5 text-sm font-medium hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
+              className="rounded-full"
+              style={{ 
+                border: '1px solid var(--color-border-default)',
+                background: 'var(--color-bg-surface)',
+                color: 'var(--color-text-primary)',
+                padding: '10px 24px',
+                fontSize: '0.875rem'
+              }}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+              className="rounded-full"
+              style={{ 
+                background: 'var(--color-bg-button)',
+                color: 'var(--color-text-primary)',
+                padding: '10px 24px',
+                fontSize: '0.875rem',
+                border: '1px solid var(--color-text-primary)',
+                opacity: isSubmitting ? 0.5 : 1
+              }}
             >
               {isSubmitting ? "Saving..." : "Save"}
             </button>

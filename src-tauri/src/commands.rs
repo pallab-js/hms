@@ -1,6 +1,8 @@
+use crate::audit::log_audit;
 use crate::db::DbState;
 use crate::error::AppError;
 use crate::models::*;
+use serde_json;
 use tauri::State;
 use uuid::Uuid;
 use email_address::EmailAddress;
@@ -90,6 +92,84 @@ pub async fn get_patients_inner(state: &DbState) -> Result<Vec<Patient>, AppErro
 }
 
 #[tauri::command]
+pub async fn get_patients_paginated(
+    state: State<'_, DbState>,
+    page: i64,
+    limit: i64,
+) -> Result<PaginatedResponse<Patient>, AppError> {
+    let pool = state.get_pool().await;
+    let offset = (page.saturating_sub(1)) * limit;
+
+    let (total,): (i64,) = sqlx::query_as("SELECT COUNT(*) FROM patients")
+        .fetch_one(&pool)
+        .await
+        .map_err(AppError::Database)?;
+
+    let pages = (total as f64 / limit as f64).ceil() as i64;
+
+    let items = sqlx::query_as::<_, Patient>(
+        "SELECT id, name, age, gender, phone, email, address, created_at, updated_at FROM patients ORDER BY name LIMIT ? OFFSET ?"
+    )
+    .bind(limit)
+    .bind(offset)
+    .fetch_all(&pool)
+    .await
+    .map_err(AppError::Database)?;
+
+    Ok(PaginatedResponse {
+        items,
+        total,
+        page,
+        limit,
+        pages: pages.max(1),
+    })
+}
+
+#[tauri::command]
+pub async fn search_patients(
+    state: State<'_, DbState>,
+    query: String,
+    page: i64,
+    limit: i64,
+) -> Result<PaginatedResponse<Patient>, AppError> {
+    let pool = state.get_pool().await;
+    let search_pattern = format!("%{}%", query.to_lowercase());
+    let offset = (page.saturating_sub(1)) * limit;
+
+    let (total,): (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM patients WHERE LOWER(name) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(email) LIKE ?"
+    )
+    .bind(&search_pattern)
+    .bind(&search_pattern)
+    .bind(&search_pattern)
+    .fetch_one(&pool)
+    .await
+    .map_err(AppError::Database)?;
+
+    let pages = (total as f64 / limit as f64).ceil() as i64;
+
+    let items = sqlx::query_as::<_, Patient>(
+        "SELECT id, name, age, gender, phone, email, address, created_at, updated_at FROM patients WHERE LOWER(name) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(email) LIKE ? ORDER BY name LIMIT ? OFFSET ?"
+    )
+    .bind(&search_pattern)
+    .bind(&search_pattern)
+    .bind(&search_pattern)
+    .bind(limit)
+    .bind(offset)
+    .fetch_all(&pool)
+    .await
+    .map_err(AppError::Database)?;
+
+    Ok(PaginatedResponse {
+        items,
+        total,
+        page,
+        limit,
+        pages: pages.max(1),
+    })
+}
+
+#[tauri::command]
 pub async fn upsert_patient(
     state: State<'_, DbState>,
     input: CreatePatient,
@@ -125,6 +205,16 @@ pub async fn upsert_patient_inner(
 
     let pool = state.get_pool().await;
     let id = input.id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
+
+    let old_values: Option<String> = sqlx::query_as(
+        "SELECT json_object('id', id, 'name', name, 'age', age, 'gender', gender, 'phone', phone, 'email', email, 'address', address) FROM patients WHERE id = ?"
+    )
+    .bind(&id)
+    .fetch_optional(&pool)
+    .await
+    .map_err(AppError::Database)?
+    .map(|r: (String,)| r.0);
+
     let ts = now();
 
     let patient = sqlx::query_as::<_, Patient>(
@@ -155,6 +245,10 @@ pub async fn upsert_patient_inner(
     .await
     .map_err(AppError::Database)?;
 
+    let new_values = serde_json::to_string(&patient).ok();
+    let action = if old_values.is_some() { "update" } else { "create" };
+    let _ = log_audit(&pool, "patient", &id, action, old_values.as_deref(), new_values.as_deref()).await;
+
     Ok(patient)
 }
 
@@ -167,6 +261,16 @@ pub async fn delete_patient_inner(state: &DbState, id: String) -> Result<(), App
     validate_uuid(&id)?;
 
     let pool = state.get_pool().await;
+
+    let old_values: Option<String> = sqlx::query_as(
+        "SELECT json_object('id', id, 'name', name, 'age', age, 'gender', gender, 'phone', phone, 'email', email, 'address', address) FROM patients WHERE id = ?"
+    )
+    .bind(&id)
+    .fetch_optional(&pool)
+    .await
+    .map_err(AppError::Database)?
+    .map(|r: (String,)| r.0);
+
     let result = sqlx::query("DELETE FROM patients WHERE id = ?")
         .bind(&id)
         .execute(&pool)
@@ -175,6 +279,10 @@ pub async fn delete_patient_inner(state: &DbState, id: String) -> Result<(), App
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound(format!("Patient with id {} not found", id)));
+    }
+
+    if let Some(old) = old_values {
+        let _ = log_audit(&pool, "patient", &id, "delete", Some(&old), None).await;
     }
 
     Ok(())
@@ -193,6 +301,40 @@ pub async fn get_appointments(state: State<'_, DbState>) -> Result<Vec<Appointme
     .map_err(AppError::Database)?;
 
     Ok(appointments)
+}
+
+#[tauri::command]
+pub async fn get_appointments_paginated(
+    state: State<'_, DbState>,
+    page: i64,
+    limit: i64,
+) -> Result<PaginatedResponse<Appointment>, AppError> {
+    let pool = state.get_pool().await;
+    let offset = (page.saturating_sub(1)) * limit;
+
+    let (total,): (i64,) = sqlx::query_as("SELECT COUNT(*) FROM appointments")
+        .fetch_one(&pool)
+        .await
+        .map_err(AppError::Database)?;
+
+    let pages = (total as f64 / limit as f64).ceil() as i64;
+
+    let items = sqlx::query_as::<_, Appointment>(
+        "SELECT id, patient_id, staff_id, title, description, scheduled_at, duration_minutes, status, created_at, updated_at FROM appointments ORDER BY scheduled_at LIMIT ? OFFSET ?"
+    )
+    .bind(limit)
+    .bind(offset)
+    .fetch_all(&pool)
+    .await
+    .map_err(AppError::Database)?;
+
+    Ok(PaginatedResponse {
+        items,
+        total,
+        page,
+        limit,
+        pages: pages.max(1),
+    })
 }
 
 #[tauri::command]
@@ -220,7 +362,6 @@ pub async fn upsert_appointment_inner(
         validate_len(desc, MAX_DESC_LEN, "Description")?;
     }
 
-    // Validate referenced records exist (FK check)
     let pool = state.get_pool().await;
 
     let patient_exists: (i64,) = sqlx::query_as(
@@ -246,6 +387,16 @@ pub async fn upsert_appointment_inner(
     }
 
     let id = input.id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
+
+    let old_values: Option<String> = sqlx::query_as(
+        "SELECT json_object('id', id, 'patient_id', patient_id, 'staff_id', staff_id, 'title', title, 'description', description, 'scheduled_at', scheduled_at, 'duration_minutes', duration_minutes, 'status', status) FROM appointments WHERE id = ?"
+    )
+    .bind(&id)
+    .fetch_optional(&pool)
+    .await
+    .map_err(AppError::Database)?
+    .map(|r: (String,)| r.0);
+
     let ts = now();
 
     let appointment = sqlx::query_as::<_, Appointment>(
@@ -275,6 +426,10 @@ pub async fn upsert_appointment_inner(
     .fetch_one(&pool)
     .await
     .map_err(AppError::Database)?;
+
+    let new_values = serde_json::to_string(&appointment).ok();
+    let action = if old_values.is_some() { "update" } else { "create" };
+    let _ = log_audit(&pool, "appointment", &id, action, old_values.as_deref(), new_values.as_deref()).await;
 
     Ok(appointment)
 }
@@ -314,6 +469,40 @@ pub async fn get_staff_inner(state: &DbState) -> Result<Vec<Staff>, AppError> {
     .map_err(AppError::Database)?;
 
     Ok(staff)
+}
+
+#[tauri::command]
+pub async fn get_staff_paginated(
+    state: State<'_, DbState>,
+    page: i64,
+    limit: i64,
+) -> Result<PaginatedResponse<Staff>, AppError> {
+    let pool = state.get_pool().await;
+    let offset = (page.saturating_sub(1)) * limit;
+
+    let (total,): (i64,) = sqlx::query_as("SELECT COUNT(*) FROM staff")
+        .fetch_one(&pool)
+        .await
+        .map_err(AppError::Database)?;
+
+    let pages = (total as f64 / limit as f64).ceil() as i64;
+
+    let items = sqlx::query_as::<_, Staff>(
+        "SELECT id, name, role, department, phone, email, created_at, updated_at FROM staff ORDER BY name LIMIT ? OFFSET ?"
+    )
+    .bind(limit)
+    .bind(offset)
+    .fetch_all(&pool)
+    .await
+    .map_err(AppError::Database)?;
+
+    Ok(PaginatedResponse {
+        items,
+        total,
+        page,
+        limit,
+        pages: pages.max(1),
+    })
 }
 
 #[tauri::command]
@@ -409,6 +598,40 @@ pub async fn get_inventory_items_inner(state: &DbState) -> Result<Vec<InventoryI
     .map_err(AppError::Database)?;
 
     Ok(items)
+}
+
+#[tauri::command]
+pub async fn get_inventory_paginated(
+    state: State<'_, DbState>,
+    page: i64,
+    limit: i64,
+) -> Result<PaginatedResponse<InventoryItem>, AppError> {
+    let pool = state.get_pool().await;
+    let offset = (page.saturating_sub(1)) * limit;
+
+    let (total,): (i64,) = sqlx::query_as("SELECT COUNT(*) FROM inventory")
+        .fetch_one(&pool)
+        .await
+        .map_err(AppError::Database)?;
+
+    let pages = (total as f64 / limit as f64).ceil() as i64;
+
+    let items = sqlx::query_as::<_, InventoryItem>(
+        "SELECT id, name, category, quantity, unit, min_quantity, created_at, updated_at FROM inventory ORDER BY name LIMIT ? OFFSET ?"
+    )
+    .bind(limit)
+    .bind(offset)
+    .fetch_all(&pool)
+    .await
+    .map_err(AppError::Database)?;
+
+    Ok(PaginatedResponse {
+        items,
+        total,
+        page,
+        limit,
+        pages: pages.max(1),
+    })
 }
 
 #[tauri::command]

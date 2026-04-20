@@ -8,11 +8,8 @@ import {
   CalendarDays,
   UserSquare2,
   Package,
-  Moon,
-  Sun,
   Settings as SettingsIcon,
 } from "lucide-react";
-import { useTheme } from "@/components/ThemeProvider";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -25,15 +22,23 @@ const navItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" style={{ background: 'var(--color-bg-primary)' }}>
       {/* Sidebar */}
-      <aside className="w-64 border-r border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] flex flex-col">
+      <aside 
+        className="w-64 flex flex-col"
+        style={{ 
+          background: 'var(--color-bg-primary)',
+          borderRight: '1px solid var(--color-border-default)'
+        }}
+      >
         {/* Logo */}
         <div className="p-6 pb-4">
-          <h2 className="text-lg font-display font-medium text-[#000000] dark:text-[#ffffff]">
+          <h2 
+            className="text-lg font-display font-medium"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
             HMS
           </h2>
         </div>
@@ -47,37 +52,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-[#e5e5e5] dark:bg-[#262626] text-[#262626] dark:text-[#d4d4d4]"
-                    : "text-[#737373] dark:text-[#a3a3a3] hover:bg-[#fafafa] dark:hover:bg-[#141414]"
-                }`}
+                className={`flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition-colors`}
+                style={{
+                  background: isActive ? 'var(--color-bg-surface)' : 'transparent',
+                  color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                }}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4" style={{ color: isActive ? 'var(--color-brand)' : 'inherit' }} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* Theme Toggle */}
-        <div className="p-4 border-t border-[#e5e5e5] dark:border-[#262626]">
-          <button
-            onClick={toggleTheme}
-            className="flex items-center gap-3 w-full rounded-full px-4 py-2.5 text-sm font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#fafafa] dark:hover:bg-[#141414] transition-colors"
-          >
-            {theme === "dark" ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
-          </button>
+        {/* Footer */}
+        <div 
+          className="p-4"
+          style={{ borderTop: '1px solid var(--color-border-default)' }}
+        >
+          <p className="code-label" style={{ fontSize: '0.7rem' }}>
+            Local-first HMS v0.1.0
+          </p>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-12 overflow-auto">{children}</main>
+      <main className="flex-1 p-12 overflow-auto" style={{ background: 'var(--color-bg-primary)' }}>
+        {children}
+      </main>
     </div>
   );
 }

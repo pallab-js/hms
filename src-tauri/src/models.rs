@@ -2,6 +2,41 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use sqlx::FromRow;
 
+// ─── Pagination ─────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct PaginatedResponse<T> {
+    pub items: Vec<T>,
+    pub total: i64,
+    pub page: i64,
+    pub limit: i64,
+    pub pages: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Default)]
+#[allow(dead_code)]
+pub struct SearchParams {
+    pub query: Option<String>,
+    pub filters: Option<String>,
+    pub sort_by: Option<String>,
+    pub sort_order: Option<String>,
+}
+
+// ─── Audit Log ───────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, FromRow)]
+#[allow(dead_code)]
+pub struct AuditLog {
+    pub id: String,
+    pub entity_type: String,
+    pub entity_id: String,
+    pub action: String,
+    pub old_values: Option<String>,
+    pub new_values: Option<String>,
+    pub timestamp: String,
+    pub user_context: Option<String>,
+}
+
 // ─── Patient ───────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type, FromRow)]

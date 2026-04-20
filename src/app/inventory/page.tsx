@@ -53,14 +53,14 @@ export default function InventoryPage() {
 
   return (
     <AppShell>
-      <div>
+      <div id="main-content">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="mb-1">Inventory</h1>
-            <p className="text-[#737373] dark:text-[#a3a3a3] text-base">
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.5 }}>
               Track supplies and equipment
               {lowStockCount > 0 && (
-                <span className="ml-2 inline-flex items-center gap-1 text-[#737373] dark:text-[#a3a3a3]">
+                <span style={{ marginLeft: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-warning)' }}>
                   <AlertTriangle className="w-3.5 h-3.5" />
                   {lowStockCount} low stock
                 </span>
@@ -69,96 +69,94 @@ export default function InventoryPage() {
           </div>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              background: 'var(--color-bg-button)',
+              color: 'var(--color-text-primary)',
+              padding: '8px 24px',
+              borderRadius: '9999px',
+              border: '1px solid var(--color-text-primary)',
+              fontSize: '0.875rem',
+              cursor: 'pointer'
+            }}
           >
             <Plus className="w-4 h-4" />
             Add Item
           </button>
         </div>
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a3a3a3]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
             <input
               type="text"
               placeholder="Search inventory..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] pl-10 pr-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+              style={{
+                width: '100%',
+                borderRadius: '9999px',
+                border: '1px solid var(--color-border-default)',
+                background: 'var(--color-bg-surface)',
+                color: 'var(--color-text-primary)',
+                padding: '10px 16px 10px 40px',
+                fontSize: '0.875rem',
+              }}
             />
           </div>
         </div>
 
-        {/* Table */}
-        <div className="rounded-xl border border-[#e5e5e5] dark:border-[#262626] overflow-hidden">
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--color-border-default)' }}>
           {isLoading ? (
-            <div className="p-12 text-center text-[#737373]">Loading...</div>
+            <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>Loading...</div>
           ) : filtered.length === 0 ? (
-            <div className="p-12 text-center text-[#737373]">
+            <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>
               {search ? "No items match your search" : "No inventory items yet"}
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e5e5e5] dark:border-[#262626] bg-[#fafafa] dark:bg-[#141414]">
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Item</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Category</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Quantity</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Unit</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Min. Stock</th>
-                  <th className="text-right p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Actions</th>
+                <tr style={{ borderBottom: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface)' }}>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Item</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Category</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Quantity</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Unit</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Min. Stock</th>
+                  <th className="text-right p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((item) => {
                   const isLow = item.quantity <= item.min_quantity;
                   return (
-                    <tr
-                      key={item.id}
-                      className={`border-b border-[#e5e5e5] dark:border-[#262626] last:border-0 hover:bg-[#fafafa] dark:hover:bg-[#141414] ${
-                        isLow ? "bg-[#fafafa] dark:bg-[#141414]" : ""
-                      }`}
-                    >
+                    <tr key={item.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', background: isLow ? 'var(--color-bg-surface)' : 'transparent' }}>
                       <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          {isLow && (
-                            <AlertTriangle className="w-3.5 h-3.5 text-[#a3a3a3]" />
-                          )}
-                          <span className="font-medium text-[#262626] dark:text-[#d4d4d4]">
-                            {item.name}
-                          </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {isLow && <AlertTriangle className="w-3.5 h-3.5" style={{ color: 'var(--color-warning)' }} />}
+                          <span style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{item.name}</span>
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className="rounded-full bg-[#e5e5e5] dark:bg-[#262626] px-3 py-1 text-xs font-medium text-[#525252] dark:text-[#a3a3a3]">
+                        <span style={{ borderRadius: '9999px', padding: '4px 12px', fontSize: '0.75rem', background: 'var(--color-bg-button)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border-default)' }}>
                           {item.category}
                         </span>
                       </td>
                       <td className="p-4">
-                        <span
-                          className={`font-medium ${
-                            isLow
-                              ? "text-[#737373] dark:text-[#a3a3a3]"
-                              : "text-[#262626] dark:text-[#d4d4d4]"
-                          }`}
-                        >
+                        <span style={{ fontWeight: 500, color: isLow ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}>
                           {item.quantity}
                         </span>
                       </td>
-                      <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{item.unit}</td>
-                      <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{item.min_quantity}</td>
+                      <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{item.unit}</td>
+                      <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{item.min_quantity}</td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => {
-                              setEditingItem(item);
-                              setShowForm(true);
-                            }}
-                            className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                            onClick={() => { setEditingItem(item); setShowForm(true); }}
+                            style={{ borderRadius: '9999px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent', color: 'var(--color-text-muted)' }}
                           >
                             <Pencil className="w-3 h-3" />
-                            Edit
                           </button>
                           <button
                             onClick={() => {
@@ -166,10 +164,9 @@ export default function InventoryPage() {
                                 deleteMutation.mutate(item.id);
                               }
                             }}
-                            className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                            style={{ borderRadius: '9999px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent', color: 'var(--color-text-muted)' }}
                           >
                             <Trash2 className="w-3 h-3" />
-                            Delete
                           </button>
                         </div>
                       </td>
@@ -213,19 +210,16 @@ function InventoryFormModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const parsedQuantity = parseInt(quantity);
     if (isNaN(parsedQuantity) || parsedQuantity < 0) {
       alert("Please enter a valid non-negative quantity");
       return;
     }
-    
     const parsedMinQuantity = parseInt(minQuantity);
     if (isNaN(parsedMinQuantity) || parsedMinQuantity < 0) {
       alert("Please enter a valid non-negative minimum quantity");
       return;
     }
-    
     onSubmit({
       id: item?.id,
       name,
@@ -236,101 +230,51 @@ function InventoryFormModal({
     });
   };
 
+  const inputStyle = {
+    width: '100%',
+    border: '1px solid var(--color-border-default)',
+    background: 'var(--color-bg-button)',
+    color: 'var(--color-text-primary)',
+    padding: '10px 16px',
+    borderRadius: '9999px',
+    fontSize: '0.875rem',
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-      <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
+      <div className="w-full max-w-lg rounded-lg" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', padding: '24px' }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">{item ? "Edit Inventory Item" : "Add Inventory Item"}</h2>
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
-          >
-            <X className="w-4 h-4 text-[#737373]" />
+          <h3>{item ? "Edit Inventory Item" : "Add Inventory Item"}</h3>
+          <button onClick={onClose} style={{ borderRadius: '9999px', padding: '8px', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent' }}>
+            <X className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Item Name *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              maxLength={255}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Item Name *</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required maxLength={255} style={inputStyle} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Category *
-            </label>
-            <input
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-              maxLength={100}
-              placeholder="e.g. Medication, Equipment"
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Category *</label>
+            <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} required maxLength={100} placeholder="e.g. Medication, Equipment" style={inputStyle} />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-                Quantity *
-              </label>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                required
-                min="0"
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Quantity *</label>
+              <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} required min="0" style={inputStyle} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-                Unit *
-              </label>
-              <input
-                type="text"
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                required
-                maxLength={50}
-                placeholder="pcs"
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Unit *</label>
+              <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} required maxLength={50} placeholder="pcs" style={inputStyle} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-                Min. Stock *
-              </label>
-              <input
-                type="number"
-                value={minQuantity}
-                onChange={(e) => setMinQuantity(e.target.value)}
-                required
-                min="0"
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Min. Stock *</label>
+              <input type="number" value={minQuantity} onChange={(e) => setMinQuantity(e.target.value)} required min="0" style={inputStyle} />
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] text-[#404040] dark:text-[#d4d4d4] px-6 py-2.5 text-sm font-medium hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
+            <button type="button" onClick={onClose} style={{ borderRadius: '9999px', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface)', color: 'var(--color-text-primary)', padding: '10px 24px', fontSize: '0.875rem', cursor: 'pointer' }}>Cancel</button>
+            <button type="submit" disabled={isSubmitting} style={{ borderRadius: '9999px', background: 'var(--color-bg-button)', color: 'var(--color-text-primary)', padding: '10px 24px', fontSize: '0.875rem', border: '1px solid var(--color-text-primary)', opacity: isSubmitting ? 0.5 : 1, cursor: 'pointer' }}>
               {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>

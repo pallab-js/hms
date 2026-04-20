@@ -52,83 +52,93 @@ export default function StaffPage() {
 
   return (
     <AppShell>
-      <div>
+      <div id="main-content">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="mb-1">Staff</h1>
-            <p className="text-[#737373] dark:text-[#a3a3a3] text-base">
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.5 }}>
               Manage staff directory
             </p>
           </div>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              background: 'var(--color-bg-button)',
+              color: 'var(--color-text-primary)',
+              padding: '8px 24px',
+              borderRadius: '9999px',
+              border: '1px solid var(--color-text-primary)',
+              fontSize: '0.875rem',
+              cursor: 'pointer'
+            }}
           >
             <Plus className="w-4 h-4" />
             Add Staff
           </button>
         </div>
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a3a3a3]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
             <input
               type="text"
               placeholder="Search by name, role, or department..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] pl-10 pr-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
+              style={{
+                width: '100%',
+                borderRadius: '9999px',
+                border: '1px solid var(--color-border-default)',
+                background: 'var(--color-bg-surface)',
+                color: 'var(--color-text-primary)',
+                padding: '10px 16px 10px 40px',
+                fontSize: '0.875rem',
+              }}
             />
           </div>
         </div>
 
-        {/* Table */}
-        <div className="rounded-xl border border-[#e5e5e5] dark:border-[#262626] overflow-hidden">
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--color-border-default)' }}>
           {isLoading ? (
-            <div className="p-12 text-center text-[#737373]">Loading...</div>
+            <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>Loading...</div>
           ) : filtered.length === 0 ? (
-            <div className="p-12 text-center text-[#737373]">
+            <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>
               {search ? "No staff match your search" : "No staff yet"}
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e5e5e5] dark:border-[#262626] bg-[#fafafa] dark:bg-[#141414]">
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Name</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Role</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Department</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Phone</th>
-                  <th className="text-left p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Email</th>
-                  <th className="text-right p-4 font-medium text-[#737373] dark:text-[#a3a3a3]">Actions</th>
+                <tr style={{ borderBottom: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface)' }}>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Name</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Role</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Department</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Phone</th>
+                  <th className="text-left p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Email</th>
+                  <th className="text-right p-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((s) => (
-                  <tr
-                    key={s.id}
-                    className="border-b border-[#e5e5e5] dark:border-[#262626] last:border-0 hover:bg-[#fafafa] dark:hover:bg-[#141414]"
-                  >
-                    <td className="p-4 font-medium text-[#262626] dark:text-[#d4d4d4]">{s.name}</td>
+                  <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                    <td className="p-4 font-medium" style={{ color: 'var(--color-text-primary)' }}>{s.name}</td>
                     <td className="p-4">
-                      <span className="rounded-full bg-[#e5e5e5] dark:bg-[#262626] px-3 py-1 text-xs font-medium text-[#525252] dark:text-[#a3a3a3]">
+                      <span style={{ borderRadius: '9999px', padding: '4px 12px', fontSize: '0.75rem', background: 'var(--color-bg-button)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border-default)' }}>
                         {s.role}
                       </span>
                     </td>
-                    <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{s.department}</td>
-                    <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{s.phone}</td>
-                    <td className="p-4 text-[#525252] dark:text-[#a3a3a3]">{s.email || "—"}</td>
+                    <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{s.department}</td>
+                    <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{s.phone}</td>
+                    <td className="p-4" style={{ color: 'var(--color-text-secondary)' }}>{s.email || "—"}</td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => {
-                            setEditingStaff(s);
-                            setShowForm(true);
-                          }}
-                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                          onClick={() => { setEditingStaff(s); setShowForm(true); }}
+                          style={{ borderRadius: '9999px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent', color: 'var(--color-text-muted)' }}
                         >
                           <Pencil className="w-3 h-3" />
-                          Edit
                         </button>
                         <button
                           onClick={() => {
@@ -136,10 +146,9 @@ export default function StaffPage() {
                               deleteMutation.mutate(s.id);
                             }
                           }}
-                          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-[#737373] dark:text-[#a3a3a3] hover:bg-[#e5e5e5] dark:hover:bg-[#262626] transition-colors"
+                          style={{ borderRadius: '9999px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent', color: 'var(--color-text-muted)' }}
                         >
                           <Trash2 className="w-3 h-3" />
-                          Delete
                         </button>
                       </div>
                     </td>
@@ -185,99 +194,51 @@ function StaffFormModal({
     onSubmit({ id: staff?.id, name, role, department, phone, email: email || null });
   };
 
+  const inputStyle = {
+    width: '100%',
+    border: '1px solid var(--color-border-default)',
+    background: 'var(--color-bg-button)',
+    color: 'var(--color-text-primary)',
+    padding: '10px 16px',
+    borderRadius: '9999px',
+    fontSize: '0.875rem',
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-      <div className="w-full max-w-lg rounded-xl border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
+      <div className="w-full max-w-lg rounded-lg" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', padding: '24px' }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[1.5rem]">{staff ? "Edit Staff" : "Add Staff"}</h2>
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
-          >
-            <X className="w-4 h-4 text-[#737373]" />
+          <h3>{staff ? "Edit Staff" : "Add Staff"}</h3>
+          <button onClick={onClose} style={{ borderRadius: '9999px', padding: '8px', cursor: 'pointer', border: '1px solid var(--color-border-default)', background: 'transparent' }}>
+            <X className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Name *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              maxLength={255}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Name *</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required maxLength={255} style={inputStyle} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-                Role *
-              </label>
-              <input
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                required
-                maxLength={100}
-                placeholder="e.g. Doctor, Nurse"
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Role *</label>
+              <input type="text" value={role} onChange={(e) => setRole(e.target.value)} required maxLength={100} placeholder="e.g. Doctor, Nurse" style={inputStyle} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-                Department *
-              </label>
-              <input
-                type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                required
-                maxLength={100}
-                placeholder="e.g. Cardiology"
-                className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Department *</label>
+              <input type="text" value={department} onChange={(e) => setDepartment(e.target.value)} required maxLength={100} placeholder="e.g. Cardiology" style={inputStyle} />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Phone *
-            </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              maxLength={50}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Phone *</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required maxLength={50} style={inputStyle} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#525252] dark:text-[#a3a3a3] mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/50"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#141414] text-[#404040] dark:text-[#d4d4d4] px-6 py-2.5 text-sm font-medium hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
+            <button type="button" onClick={onClose} style={{ borderRadius: '9999px', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface)', color: 'var(--color-text-primary)', padding: '10px 24px', fontSize: '0.875rem', cursor: 'pointer' }}>Cancel</button>
+            <button type="submit" disabled={isSubmitting} style={{ borderRadius: '9999px', background: 'var(--color-bg-button)', color: 'var(--color-text-primary)', padding: '10px 24px', fontSize: '0.875rem', border: '1px solid var(--color-text-primary)', opacity: isSubmitting ? 0.5 : 1, cursor: 'pointer' }}>
               {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>

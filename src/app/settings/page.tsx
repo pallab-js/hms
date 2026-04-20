@@ -80,35 +80,67 @@ export default function SettingsPage() {
     }
   };
 
+  const cardStyle = {
+    border: '1px solid var(--color-border-default)',
+    borderRadius: '8px',
+    padding: '24px',
+    background: 'var(--color-bg-surface)',
+    marginBottom: '32px'
+  };
+
+  const inputContainerStyle = {
+    display: 'flex',
+    border: '1px solid var(--color-border-default)',
+    borderRadius: '9999px',
+    background: 'var(--color-bg-button)',
+    overflow: 'hidden',
+  };
+
+  const inputStyle = {
+    flex: 1,
+    background: 'transparent',
+    padding: '10px 16px',
+    fontSize: '0.875rem',
+    color: 'var(--color-text-primary)',
+    border: 'none',
+    outline: 'none',
+  };
+
   return (
     <AppShell>
-      <div>
+      <div id="main-content">
         <h1 className="mb-1">Settings</h1>
-        <p className="text-[#737373] dark:text-[#a3a3a3] text-base mb-12">
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '1rem', lineHeight: 1.5, marginBottom: '48px' }}>
           Export reports and manage backups
         </p>
 
         {/* Export Report */}
-        <div className="rounded-xl border border-[#e5e5e5] dark:border-[#262626] p-6 mb-8">
+        <div style={cardStyle}>
           <div className="flex items-center gap-3 mb-4">
-            <FileDown className="w-5 h-5 text-[#525252] dark:text-[#a3a3a3]" />
-            <h2 className="text-[1.25rem]">Export Report</h2>
+            <FileDown className="w-5 h-5" style={{ color: 'var(--color-text-muted)' }} />
+            <h3>Export Report</h3>
           </div>
-          <p className="text-sm text-[#737373] dark:text-[#a3a3a3] mb-4">
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', marginBottom: '16px' }}>
             Generate a PDF report containing all patients, staff, and inventory data.
           </p>
           <div className="flex gap-3">
-            <div className="flex-1 flex overflow-hidden rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] focus-within:ring-2 focus-within:ring-[#3b82f6]/50">
+            <div style={inputContainerStyle}>
               <input
                 type="text"
                 readOnly
                 value={reportPath}
                 placeholder="Click browse to select destination..."
-                className="flex-1 bg-transparent px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none truncate"
+                style={inputStyle}
               />
               <button
                 onClick={handleSelectReportPath}
-                className="px-4 py-2.5 border-l border-[#e5e5e5] dark:border-[#262626] hover:bg-[#fafafa] dark:hover:bg-[#141414] text-[#525252] dark:text-[#a3a3a3] transition-colors"
+                style={{ 
+                  padding: '10px 16px', 
+                  borderLeft: '1px solid var(--color-border-default)',
+                  background: 'transparent',
+                  color: 'var(--color-text-muted)',
+                  cursor: 'pointer'
+                }}
                 title="Browse"
               >
                 <FolderOpen className="w-4 h-4" />
@@ -117,7 +149,16 @@ export default function SettingsPage() {
             <button
               onClick={handleExportReport}
               disabled={reportStatus === "loading" || !reportPath}
-              className="rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity whitespace-nowrap"
+              style={{ 
+                background: 'var(--color-bg-button)',
+                color: 'var(--color-text-primary)',
+                padding: '10px 24px',
+                borderRadius: '9999px',
+                border: '1px solid var(--color-text-primary)',
+                fontSize: '0.875rem',
+                opacity: reportStatus === "loading" || !reportPath ? 0.5 : 1,
+                cursor: 'pointer'
+              }}
             >
               {reportStatus === "loading" ? "Generating..." : "Export PDF"}
             </button>
@@ -128,26 +169,32 @@ export default function SettingsPage() {
         </div>
 
         {/* Database Backup */}
-        <div className="rounded-xl border border-[#e5e5e5] dark:border-[#262626] p-6">
+        <div style={cardStyle}>
           <div className="flex items-center gap-3 mb-4">
-            <HardDrive className="w-5 h-5 text-[#525252] dark:text-[#a3a3a3]" />
-            <h2 className="text-[1.25rem]">Database Backup</h2>
+            <HardDrive className="w-5 h-5" style={{ color: 'var(--color-text-muted)' }} />
+            <h3>Database Backup</h3>
           </div>
-          <p className="text-sm text-[#737373] dark:text-[#a3a3a3] mb-4">
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', marginBottom: '16px' }}>
             Create a copy of the SQLite database to a user-defined location.
           </p>
           <div className="flex gap-3">
-            <div className="flex-1 flex overflow-hidden rounded-full border border-[#e5e5e5] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] focus-within:ring-2 focus-within:ring-[#3b82f6]/50">
+            <div style={inputContainerStyle}>
               <input
                 type="text"
                 readOnly
                 value={backupDir}
                 placeholder="Click browse to select directory..."
-                className="flex-1 bg-transparent px-4 py-2.5 text-sm text-[#262626] dark:text-[#d4d4d4] placeholder-[#a3a3a3] focus:outline-none truncate"
+                style={inputStyle}
               />
               <button
                 onClick={handleSelectBackupDir}
-                className="px-4 py-2.5 border-l border-[#e5e5e5] dark:border-[#262626] hover:bg-[#fafafa] dark:hover:bg-[#141414] text-[#525252] dark:text-[#a3a3a3] transition-colors"
+                style={{ 
+                  padding: '10px 16px', 
+                  borderLeft: '1px solid var(--color-border-default)',
+                  background: 'transparent',
+                  color: 'var(--color-text-muted)',
+                  cursor: 'pointer'
+                }}
                 title="Browse"
               >
                 <FolderOpen className="w-4 h-4" />
@@ -156,7 +203,16 @@ export default function SettingsPage() {
             <button
               onClick={handleBackup}
               disabled={backupStatus === "loading" || !backupDir}
-              className="rounded-full bg-[#000000] dark:bg-[#ffffff] text-[#ffffff] dark:text-[#000000] px-6 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity whitespace-nowrap"
+              style={{ 
+                background: 'var(--color-bg-button)',
+                color: 'var(--color-text-primary)',
+                padding: '10px 24px',
+                borderRadius: '9999px',
+                border: '1px solid var(--color-text-primary)',
+                fontSize: '0.875rem',
+                opacity: backupStatus === "loading" || !backupDir ? 0.5 : 1,
+                cursor: 'pointer'
+              }}
             >
               {backupStatus === "loading" ? "Backing up..." : "Backup"}
             </button>
@@ -172,13 +228,13 @@ export default function SettingsPage() {
 
 function StatusMessage({ status, message }: { status: string; message: string }) {
   return (
-    <div className="mt-3 flex items-center gap-2 text-sm">
+    <div className="mt-3 flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
       {status === "success" ? (
-        <CheckCircle className="w-4 h-4 text-[#737373] dark:text-[#a3a3a3]" />
+        <CheckCircle className="w-4 h-4" style={{ color: 'var(--color-brand)' }} />
       ) : (
-        <AlertCircle className="w-4 h-4 text-[#737373] dark:text-[#a3a3a3]" />
+        <AlertCircle className="w-4 h-4" style={{ color: 'var(--color-error)' }} />
       )}
-      <span className="text-[#525252] dark:text-[#a3a3a3]">{message}</span>
+      <span>{message}</span>
     </div>
   );
 }

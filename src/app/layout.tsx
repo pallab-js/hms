@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/QueryProvider";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "HMS — Hospital Management System",
@@ -15,10 +15,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-white text-black antialiased">
-        <QueryProvider>
-          <ThemeProvider>{children}</ThemeProvider>
-        </QueryProvider>
+      <body className="min-h-screen antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--color-brand)] focus:text-[var(--color-bg-button)] focus:rounded-md"
+        >
+          Skip to main content
+        </a>
+        <ErrorBoundary>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
